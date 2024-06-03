@@ -45,7 +45,7 @@ class MyConf():
             return
 
     def set_section_value(self, useSection, useKey, useValue):
-        if useSection not in confDat:
+        if useSection not in self.confDat:
             self.confDat[useSection] = {}
         self.confDat[useSection][useKey] = useValue
 
