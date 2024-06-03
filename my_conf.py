@@ -95,7 +95,7 @@ class test_MyConf(unittest.TestCase):
         sys.stdout.flush()
 
     @classmethod
-    def genTestConfig(cls, testFile=None):
+    def genTestConfig(cls, testFile=None) -> bool:
         if testFile:
             saveAsFile = testFile
         else:
@@ -119,8 +119,9 @@ class test_MyConf(unittest.TestCase):
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             logger.warning(f"failed generic test config {saveAsFile} for writing: {eeh}")
-            self.fail(f"Failed to generate a test config file")
-            return
+            ##self.fail(f"Failed to generate a test config file")
+            return False
+        return True
 
 
     def setUp(self):
@@ -129,7 +130,7 @@ class test_MyConf(unittest.TestCase):
         self.testFile = self.defaultTestFile
         if len(sys.argv) > 1:
             self.testFile = sys.argv[1]
-        self.genTestConfig()
+        self.assertTrue(self.genTestConfig())
         self.myConf = MyConf(termPrint=logger.info, sysPrint=logger.debug, confFile=self.testFile)
         ##self.myConf.printConfig()
 
