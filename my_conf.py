@@ -49,7 +49,7 @@ class MyConf(configparser.ConfigParser):
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             logger.warning(f"failed opening {confFile} for reading: {eeh}")
             logger.debug("Continuing on")
-            self.writeCon("Error merging config {confFile}. Moving on")
+            self.writeCon(f"Error merging config {confFile}. Moving on")
 
     def readConfig(self, confFile) -> None:
         if len(self.sections()) > 0:
@@ -61,7 +61,7 @@ class MyConf(configparser.ConfigParser):
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             logger.warning(f"failed opening {confFile} for reading: {eeh}")
             logger.debug("Continuing on")
-            self.writeCon("Error reading config {confFile}. Moving on")
+            self.writeCon(f"Error reading config {confFile}. Moving on")
 
     def setSectionValue(self, useSection, useKey, useValue) -> None:
         if useSection not in self.sections():
@@ -85,7 +85,7 @@ class MyConf(configparser.ConfigParser):
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             logger.warning(f"failed deleting key {useKey} in config section {useSection} : {eeh}")
-            self.writeCon("Error deleting key {useKey} in section {useSection}. Moving on")
+            self.writeCon(f"Error deleting key {useKey} in section {useSection}. Moving on")
 
     def delSection(self, useSection) -> None:
         try:
@@ -95,8 +95,8 @@ class MyConf(configparser.ConfigParser):
             return
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
-            logger.warning(f"failed deleting key {useKey} in config section {useSection} : {eeh}")
-            self.writeCon("Error deleting no-existant section {useSection}. Moving on")
+            logger.warning(f"failed deleting config section {useSection} : {eeh}")
+            self.writeCon(f"Error deleting no-existant section {useSection}. Moving on")
 
     def get_config_section(self, useSection) -> dict:
         # Assuming a section called 'Settings' exists in the config file
