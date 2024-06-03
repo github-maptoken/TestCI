@@ -1,2 +1,2 @@
 # TestCI
-Try out github CI on a simple python script
+Try out github CI/CD on a simple python script
