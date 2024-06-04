@@ -241,8 +241,8 @@ class test_MyConf(unittest.TestCase):
         """ test case read config file """
         print(f"\n==> RUNTEST {self.id()} <==")
         try:
-            self.myConf = MyConf(termPrint=print, sysPrint=print)   ## redo myConf because setUp()
-            self.myConf.readConfig(confFile=self.defaultTestFile,mergeIn=False)
+            self.myConf = MyConf(termPrint=print, sysPrint=print)   # redo myConf because setUp()
+            self.myConf.readConfig(confFile=self.defaultTestFile, mergeIn=False)
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             self.fail("Failed to read config file")
@@ -263,7 +263,7 @@ class test_MyConf(unittest.TestCase):
             self.myConf.printSection('SERVER_TOPICS')
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
-            self.fail(f"Failed to print section of config file")
+            self.fail("Failed to print section of config file")
 
     def test_SaveConfig(self) -> None:
         """ test case save config file """
