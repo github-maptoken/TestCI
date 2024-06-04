@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
-
-##  Wrapper for ConfigParser to deal with '.ini' style config file
-##  Config is used to primarily put literal values into a
-##  single place for ease of modifications.
+"""
+  Wrapper for ConfigParser to deal with '.ini' style config file
+  Config is used to primarily put literal values into a
+  single place for ease of modifications.
+"""
 
 import os
-##import sys
+# import sys
 import time
 import datetime
+
 import locale
-##import subprocess
 import configparser
 import unittest
 import logging
 
 
-##logging.basicConfig(level=logging.DEBUG, filename=logFile)
+# logging.basicConfig(level=logging.DEBUG, filename=logFile)
 logger = logging.getLogger(__name__)
 
 
@@ -53,7 +54,7 @@ class MyConf(configparser.ConfigParser):
         if not mergeIn:
             if len(self.sections()) > 0:
                 self.write_con("Re-reading config file")
-                self.clear()    ## NOTE: special builtin section DEFAULTSECT not removed
+                self.clear()    # NOTE: special builtin section DEFAULTSECT not removed
         if confFile is None:
             self.write_con("No filename given to read configuration")
             return
@@ -87,7 +88,7 @@ class MyConf(configparser.ConfigParser):
     def delSectionKey(self, useSection, useKey) -> None:
         """ remove key in a section """
         try:
-            self.remove_option(useSection,useKey)
+            self.remove_option(useSection, useKey)
         except configparser.NoSectionError:
             self.write_con(f"Removing key {useKey} from none existant section {useSection}")
             return
@@ -164,7 +165,7 @@ class MyConf(configparser.ConfigParser):
 
 class test_MyConf(unittest.TestCase):
     """ unittest class for testing MyConf class """
-    ## class variables
+    # class variables
     dateOnly = datetime.date.today()
     timeOnly = time.strftime("%H_%M_%S")
     defaultTestFile = "testconf-" + str(dateOnly) + "-" + timeOnly + ".conf"
@@ -173,7 +174,7 @@ class test_MyConf(unittest.TestCase):
     def setUpClass(cls) -> None:
         """ Setup done before any test case """
         print('\n=== setUp Unit Testing ===')
-        ##sys.stdout.flush()
+        # sys.stdout.flush()
         locale.setlocale(locale.LC_ALL, '')
         # Generate a sample config file
         cls.genTestConfig(cls.defaultTestFile)
@@ -182,7 +183,7 @@ class test_MyConf(unittest.TestCase):
     def tearDownClass(cls) -> None:
         """ Teardown done after all test cases """
         print('\n=== tearDown Unit Testing ===')
-        ##sys.stdout.flush()
+        # sys.stdout.flush()
         try:
             os.remove(cls.defaultTestFile)
         except Exception as eeh:
@@ -222,8 +223,8 @@ class test_MyConf(unittest.TestCase):
 
     def setUp(self) -> None:
         """ test case setup """
-        ##print('\n== setUp Test Case ==')
-        ##sys.stdout.flush()
+        # print('\n== setUp Test Case ==')
+        # sys.stdout.flush()
         try:
             self.myConf = MyConf(termPrint=print, sysPrint=print, confFile=self.defaultTestFile)
         except Exception as eeh:
@@ -232,8 +233,8 @@ class test_MyConf(unittest.TestCase):
 
     def tearDown(self) -> None:
         """ test case teardown """
-        ##print('\n== tearDown Test Case ==')
-        ##sys.stdout.flush()
+        # print('\n== tearDown Test Case ==')
+        # sys.stdout.flush()
         pass
 
     def test_ReadConfig(self) -> None:
@@ -315,6 +316,6 @@ class test_MyConf(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    #logging.basicConfig(level=logging.DEBUG)
+    # logging.basicConfig(level=logging.DEBUG)
     logger.debug("Running unit testing...")
     unittest.main()
