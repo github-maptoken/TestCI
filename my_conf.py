@@ -15,6 +15,7 @@ import configparser
 import unittest
 import logging
 
+USE_ENCODING = "utf-8"
 
 # logging.basicConfig(level=logging.DEBUG, filename=logFile)
 logger = logging.getLogger(__name__)
@@ -24,17 +25,18 @@ class MyConf(configparser.ConfigParser):
     """ Derived class Configparser for custom config file processing. Also,
         so that 'stdout/stderr' are configurable, and specialty methods.
     """
-    def __init__(self, termPrint, sysPrint, confFile=None, parent=None):
-        """ termPrint => stdout, sysPrint => stderr. Needed for UI purposes """
+    # Class variable
+    def __init__(self, termout, sysout, conf_file=None, parent=None):
+        """ termout => stdout, sysout => stderr. Needed for UI purposes """
         super().__init__(parent)
-        self.write_chat = termPrint
-        self.write_con = sysPrint
-        if confFile:
+        self.write_chat = termout
+        self.write_con = sysout
+        if conf_file:
             try:
-                self.read(confFile)
+                self.read(conf_file)
             except Exception as eeh:
                 self.write_con(f"Class of exception is : {type(eeh).__name__}")
-                self.write_con(f"failed opening {confFile} for reading: {eeh}")
+                self.write_con(f"failed opening {conf_file} for reading: {eeh}")
                 self.write_con("Error Initializing config. Moving on")
 
     def printConfig(self) -> None:
@@ -47,128 +49,120 @@ class MyConf(configparser.ConfigParser):
             self.write_chat(f"[{sx}]")
             for kx in self[sx]:
                 self.write_chat(f" {kx} = {self[sx][kx]}")
-        return
 
-    def readConfig(self, confFile, mergeIn=False) -> None:
+    def readConfig(self, conf_file, merge_in_flag=False) -> None:
         """ load configuration file """
-        if not mergeIn:
+        if not merge_in_flag:
             if len(self.sections()) > 0:
                 self.write_con("Re-reading config file")
                 self.clear()    # NOTE: special builtin section DEFAULTSECT not removed
-        if confFile is None:
+        if conf_file is None:
             self.write_con("No filename given to read configuration")
             return
         try:
-            self.read(confFile)
+            self.read(conf_file)
         except Exception as eeh:
             self.write_con(f"Class of exception is : {type(eeh).__name__}")
-            self.write_con(f"failed opening {confFile} for reading: {eeh}")
-            if not mergeIn:
-                self.write_con(f"Error merging config {confFile}. Moving on")
+            self.write_con(f"failed opening {conf_file} for reading: {eeh}")
+            if not merge_in_flag:
+                self.write_con(f"Error merging config {conf_file}. Moving on")
             else:
-                self.write_con(f"Error loading config {confFile}. Moving on")
-        return
+                self.write_con(f"Error loading config {conf_file}. Moving on")
 
-    def setSectionValue(self, useSection, useKey, useValue) -> None:
+    def setSectionValue(self, sect_name, key_name, use_value) -> None:
         """ create or set a value of a key in a section """
-        if useSection not in self.sections():
-            self[useSection] = {}
-        self[useSection][useKey] = useValue
-        return
+        if sect_name not in self.sections():
+            self[sect_name] = {}
+        self[sect_name][key_name] = use_value
 
-    def getSectionValue(self, useSection, useKey, useDefault) -> str:
+    def getSectionValue(self, sect_name, key_name, use_default) -> str:
         """ get value of a key in a section """
-        if useSection not in self.sections():
-            return useDefault
-        if self[useSection][useKey]:
-            return self[useSection][useKey]
-        else:
-            return useDefault
+        if sect_name not in self.sections():
+            return use_default
+        if self[sect_name][key_name]:
+            return self[sect_name][key_name]
+        return use_default
 
-    def delSectionKey(self, useSection, useKey) -> None:
+    def delSectionKey(self, sect_name, key_name) -> None:
         """ remove key in a section """
         try:
-            self.remove_option(useSection, useKey)
+            self.remove_option(sect_name, key_name)
         except configparser.NoSectionError:
-            self.write_con(f"Removing key {useKey} from none existant section {useSection}")
+            self.write_con(f"Removing key {key_name} from none existant section {sect_name}")
             return
         except Exception as eeh:
             self.write_con(f"Class of exception is : {type(eeh).__name__}")
-            self.write_con(f"failed deleting key {useKey} in config section {useSection} : {eeh}")
-            self.write_con(f"Error deleting key {useKey} in section {useSection}. Moving on")
-        return
+            self.write_con(f"failed deleting key {key_name} in config section {sect_name} : {eeh}")
+            self.write_con(f"Error deleting key {key_name} in section {sect_name}. Moving on")
 
-    def delSection(self, useSection) -> None:
+    def delSection(self, sect_name) -> None:
         """ remove section in config """
         try:
-            self.remove_section(useSection)
+            self.remove_section(sect_name)
         except configparser.NoSectionError:
-            self.write_con(f"Removing non-existant section {useSection} from config")
+            self.write_con(f"Removing non-existant section {sect_name} from config")
             return
         except Exception as eeh:
             self.write_con(f"Class of exception is : {type(eeh).__name__}")
-            self.write_con(f"failed deleting config section {useSection} : {eeh}")
-            self.write_con(f"Error deleting no-existant section {useSection}. Moving on")
-        return
+            self.write_con(f"failed deleting config section {sect_name} : {eeh}")
+            self.write_con(f"Error deleting no-existant section {sect_name}. Moving on")
 
-    def addSection(self, useSection) -> None:
+    def addSection(self, sect_name) -> None:
         """ add section in config if missing """
-        if self.haveSection(useSection):
+        if self.haveSection(sect_name):
             return
         try:
-            self.add_section(useSection)
+            self.add_section(sect_name)
         except Exception as eeh:
             self.write_con(f"Class of exception is : {type(eeh).__name__}")
-            self.write_con(f"failed adding config section {useSection} : {eeh}")
-            self.write_con(f"Error adding config section {useSection}. Moving on")
-        return
+            self.write_con(f"failed adding config section {sect_name} : {eeh}")
+            self.write_con(f"Error adding config section {sect_name}. Moving on")
 
-    def getSection(self, useSection) -> dict:
+    def getSection(self, sect_name) -> dict:
         """ return section in config, empty dictionary if missing """
-        if useSection in self.sections():
-            return dict(self[useSection])
+        if sect_name in self.sections():
+            return dict(self[sect_name])
         return {}
 
-    def haveSection(self, useSection) -> bool:
+    def haveSection(self, sect_name) -> bool:
         """ Check existance of a section in config """
-        return useSection in self.sections()
+        return sect_name in self.sections()
 
-    def haveKey(self, useSection, useKey) -> bool:
+    def haveKey(self, sect_name, key_name) -> bool:
         """ Check existance of a key in a section of config """
-        if useSection not in self.sections():
+        if sect_name not in self.sections():
             return False
-        return useKey in self[useSection]
+        return key_name in self[sect_name]
 
-    def printSection(self, useSection) -> None:
+    def printSection(self, sect_name) -> None:
         """ Print to terminal section of config """
-        if useSection not in self.sections():
-            self.write_con(f"No section {useSection} in config")
+        if sect_name not in self.sections():
+            self.write_con(f"No section {sect_name} in config")
             return
-        self.write_chat(f"Print section {useSection}")
-        if useSection in self.sections():
-            for kx in self[useSection]:
-                self.write_chat(f" {kx} = {self[useSection][kx]}")
-        return
+        self.write_chat(f"Print section {sect_name}")
+        if sect_name in self.sections():
+            for kx in self[sect_name]:
+                self.write_chat(f" {kx} = {self[sect_name][kx]}")
 
-    def saveConfig(self, useFile) -> bool:
+    def saveConfig(self, use_filename) -> bool:
         """ Save config to file. Returns bool used mostly for testing """
         try:
-            with open(useFile, 'w') as config_file:
-                self.write(config_file)
+            with open(use_filename, mode='w', encoding=USE_ENCODING) as conf_file:
+                self.write(conf_file)
         except Exception as eeh:
             self.write_con(f"Class of exception is : {type(eeh).__name__}")
-            self.write_con(f"failed opening {useFile} for writing: {eeh}")
-            self.write_con(f"Failed writing config to {useFile}")
+            self.write_con(f"failed opening {use_filename} for writing: {eeh}")
+            self.write_con(f"Failed writing config to {use_filename}")
             return False
         return True
 
 
-class test_MyConf(unittest.TestCase):
+class Test_MyConf(unittest.TestCase):
     """ unittest class for testing MyConf class """
     # class variables
     dateOnly = datetime.date.today()
     timeOnly = time.strftime("%H_%M_%S")
-    defaultTestFile = "testconf-" + str(dateOnly) + "-" + timeOnly + ".conf"
+    default_test_conf = "testconf-" + str(dateOnly) + "-" + timeOnly + ".conf"
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -177,7 +171,7 @@ class test_MyConf(unittest.TestCase):
         # sys.stdout.flush()
         locale.setlocale(locale.LC_ALL, '')
         # Generate a sample config file
-        cls.genTestConfig(cls.defaultTestFile)
+        cls.genTestConfig(cls.default_test_conf)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -185,38 +179,38 @@ class test_MyConf(unittest.TestCase):
         print('\n=== tearDown Unit Testing ===')
         # sys.stdout.flush()
         try:
-            os.remove(cls.defaultTestFile)
+            os.remove(cls.default_test_conf)
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             unittest.fail("tearDown failure")
             return
 
     @classmethod
-    def genTestConfig(cls, testFile=None) -> bool:
+    def genTestConfig(cls, test_filename=None) -> bool:
         """ Generate an example config for testing purposes """
-        if testFile:
-            saveAsFile = testFile
+        if test_filename:
+            save_filename = test_filename
         else:
-            saveAsFile = cls.defaultTestFile
+            save_filename = cls.default_test_conf
         confDat = configparser.ConfigParser()
         confDat['MAIN'] = {'coreTopic': 'HouseIoT',
                            'devName': 'myDev'
                            }
         confDat['SERVER_TOPICS'] = {}
         confDat['DEVICE_TOPICS'] = {}
-        serverStuff = confDat['SERVER_TOPICS']
-        serverStuff['Receiver'] = '/rcvsrv'
-        serverStuff['Quit'] = '/quitsrv'
-        myStuff = confDat['DEVICE_TOPICS']
-        myStuff['Receiver'] = '/rcviot'
-        myStuff['Quit'] = '/quitiot'
+        server_section = confDat['SERVER_TOPICS']
+        server_section['Receiver'] = '/rcvsrv'
+        server_section['Quit'] = '/quitsrv'
+        dev_section = confDat['DEVICE_TOPICS']
+        dev_section['Receiver'] = '/rcviot'
+        dev_section['Quit'] = '/quitiot'
         try:
-            with open(saveAsFile, 'w') as confFile:
-                confDat.write(confFile)
-            logger.debug(f"Generated test config {saveAsFile}")
+            with open(save_filename, mode='w', encoding=USE_ENCODING) as conf_file:
+                confDat.write(conf_file)
+            logger.debug(f"Generated test config {save_filename}")
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
-            logger.warning(f"failed generic test config {saveAsFile} for writing : {eeh}")
+            logger.warning(f"failed generic test config {save_filename} for writing : {eeh}")
             # self.fail(f"Failed to generate a test config file")
             return False
         return True
@@ -226,7 +220,7 @@ class test_MyConf(unittest.TestCase):
         # print('\n== setUp Test Case ==')
         # sys.stdout.flush()
         try:
-            self.myConf = MyConf(termPrint=print, sysPrint=print, confFile=self.defaultTestFile)
+            self.myConf = MyConf(termout=print, sysout=print, conf_file=self.default_test_conf)
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             self.fail("Failed to setup test case")
@@ -235,14 +229,14 @@ class test_MyConf(unittest.TestCase):
         """ test case teardown """
         # print('\n== tearDown Test Case ==')
         # sys.stdout.flush()
-        pass
+        # pass
 
     def test_ReadConfig(self) -> None:
         """ test case read config file """
         print(f"\n==> RUNTEST {self.id()} <==")
         try:
-            self.myConf = MyConf(termPrint=print, sysPrint=print)   # redo myConf because setUp()
-            self.myConf.readConfig(confFile=self.defaultTestFile, mergeIn=False)
+            self.myConf = MyConf(termout=print, sysout=print)   # redo myConf because setUp()
+            self.myConf.readConfig(conf_file=self.default_test_conf, merge_in_flag=False)
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
             self.fail("Failed to read config file")
@@ -268,13 +262,13 @@ class test_MyConf(unittest.TestCase):
     def test_SaveConfig(self) -> None:
         """ test case save config file """
         print(f"\n==> RUNTEST {self.id()} <==")
-        copyTestFile = "copy-" + self.defaultTestFile
-        self.assertTrue(self.myConf.saveConfig(copyTestFile))
+        copy_conf_file = "copy-" + self.default_test_conf
+        self.assertTrue(self.myConf.saveConfig(copy_conf_file))
         try:
-            os.remove(copyTestFile)
+            os.remove(copy_conf_file)
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
-            logger.warning(f"failed removing copy of test config {self.testFile}: {eeh}")
+            logger.warning(f"failed removing copy of test config {copy_conf_file}: {eeh}")
             self.fail("save config failure")
 
     def test_setSectionValue(self) -> None:
