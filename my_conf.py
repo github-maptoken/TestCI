@@ -10,6 +10,7 @@ import os
 import time
 import datetime
 
+from typing import Callable, Optional, Any
 import locale
 import configparser
 import unittest
@@ -25,8 +26,11 @@ class MyConf(configparser.ConfigParser):
     """ Derived class Configparser for custom config file processing. Also,
         so that 'stdout/stderr' are configurable, and specialty methods.
     """
-    # Class variable
-    def __init__(self, termout, sysout, conf_file=None, parent=None):
+    def __init__(self,
+                 termout: Callable[[str],None],
+                 sysout: Callable[[str],None],
+                 conf_file: Optional[str] = None,
+                 parent: Any = None) -> None:
         """ termout => stdout, sysout => stderr. Needed for UI purposes """
         super().__init__(parent)
         self.write_chat = termout
@@ -50,7 +54,7 @@ class MyConf(configparser.ConfigParser):
             for kx in self[sx]:
                 self.write_chat(f" {kx} = {self[sx][kx]}")
 
-    def readConfig(self, conf_file, merge_in_flag=False) -> None:
+    def readConfig(self, conf_file: str, merge_in_flag: bool = False) -> None:
         """ load configuration file """
         if not merge_in_flag:
             if len(self.sections()) > 0:
@@ -69,13 +73,13 @@ class MyConf(configparser.ConfigParser):
             else:
                 self.write_con(f"Error loading config {conf_file}. Moving on")
 
-    def setSectionValue(self, sect_name, key_name, use_value) -> None:
+    def setSectionValue(self, sect_name: str, key_name: str, use_value: str) -> None:
         """ create or set a value of a key in a section """
         if sect_name not in self.sections():
             self[sect_name] = {}
         self[sect_name][key_name] = use_value
 
-    def getSectionValue(self, sect_name, key_name, use_default) -> str:
+    def getSectionValue(self, sect_name: str, key_name: str, use_default: str) -> str:
         """ get value of a key in a section """
         if sect_name not in self.sections():
             return use_default
@@ -83,7 +87,7 @@ class MyConf(configparser.ConfigParser):
             return self[sect_name][key_name]
         return use_default
 
-    def delSectionKey(self, sect_name, key_name) -> None:
+    def delKey(self, sect_name: str, key_name: str) -> None:
         """ remove key in a section """
         try:
             self.remove_option(sect_name, key_name)
@@ -95,7 +99,7 @@ class MyConf(configparser.ConfigParser):
             self.write_con(f"failed deleting key {key_name} in config section {sect_name} : {eeh}")
             self.write_con(f"Error deleting key {key_name} in section {sect_name}. Moving on")
 
-    def delSection(self, sect_name) -> None:
+    def delSection(self, sect_name: str) -> None:
         """ remove section in config """
         try:
             self.remove_section(sect_name)
@@ -107,7 +111,7 @@ class MyConf(configparser.ConfigParser):
             self.write_con(f"failed deleting config section {sect_name} : {eeh}")
             self.write_con(f"Error deleting no-existant section {sect_name}. Moving on")
 
-    def addSection(self, sect_name) -> None:
+    def addSection(self, sect_name: str) -> None:
         """ add section in config if missing """
         if self.haveSection(sect_name):
             return
@@ -118,23 +122,23 @@ class MyConf(configparser.ConfigParser):
             self.write_con(f"failed adding config section {sect_name} : {eeh}")
             self.write_con(f"Error adding config section {sect_name}. Moving on")
 
-    def getSection(self, sect_name) -> dict:
+    def getSection(self, sect_name: str) -> dict[str,str]:
         """ return section in config, empty dictionary if missing """
         if sect_name in self.sections():
             return dict(self[sect_name])
         return {}
 
-    def haveSection(self, sect_name) -> bool:
+    def haveSection(self, sect_name: str) -> bool:
         """ Check existance of a section in config """
         return sect_name in self.sections()
 
-    def haveKey(self, sect_name, key_name) -> bool:
+    def haveKey(self, sect_name: str, key_name: str) -> bool:
         """ Check existance of a key in a section of config """
         if sect_name not in self.sections():
             return False
         return key_name in self[sect_name]
 
-    def printSection(self, sect_name) -> None:
+    def printSection(self, sect_name: str) -> None:
         """ Print to terminal section of config """
         if sect_name not in self.sections():
             self.write_con(f"No section {sect_name} in config")
@@ -144,7 +148,7 @@ class MyConf(configparser.ConfigParser):
             for kx in self[sect_name]:
                 self.write_chat(f" {kx} = {self[sect_name][kx]}")
 
-    def saveConfig(self, use_filename) -> bool:
+    def saveConfig(self, use_filename: str) -> bool:
         """ Save config to file. Returns bool used mostly for testing """
         try:
             with open(use_filename, mode='w', encoding=USE_ENCODING) as conf_file:
@@ -160,8 +164,8 @@ class MyConf(configparser.ConfigParser):
 class Test_MyConf(unittest.TestCase):
     """ unittest class for testing MyConf class """
     # class variables
-    dateOnly = datetime.date.today()
-    timeOnly = time.strftime("%H_%M_%S")
+    dateOnly: Any = datetime.date.today()
+    timeOnly: Any = time.strftime("%H_%M_%S")
     default_test_conf = "testconf-" + str(dateOnly) + "-" + timeOnly + ".conf"
 
     @classmethod
@@ -182,11 +186,10 @@ class Test_MyConf(unittest.TestCase):
             os.remove(cls.default_test_conf)
         except Exception as eeh:
             logger.warning(f"Class of exception is : {type(eeh).__name__}")
-            unittest.fail("tearDown failure")
             return
 
     @classmethod
-    def genTestConfig(cls, test_filename=None) -> bool:
+    def genTestConfig(cls, test_filename: Optional[str] = None) -> bool:
         """ Generate an example config for testing purposes """
         if test_filename:
             save_filename = test_filename
