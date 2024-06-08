@@ -27,8 +27,8 @@ class MyConf(configparser.ConfigParser):
         so that 'stdout/stderr' are configurable, and specialty methods.
     """
     def __init__(self,
-                 termout: Callable[[str],None],
-                 sysout: Callable[[str],None],
+                 termout: Callable[[str], None],
+                 sysout: Callable[[str], None],
                  conf_file: Optional[str] = None,
                  parent: Any = None) -> None:
         """ termout => stdout, sysout => stderr. Needed for UI purposes """
@@ -122,7 +122,7 @@ class MyConf(configparser.ConfigParser):
             self.write_con(f"failed adding config section {sect_name} : {eeh}")
             self.write_con(f"Error adding config section {sect_name}. Moving on")
 
-    def getSection(self, sect_name: str) -> dict[str,str]:
+    def getSection(self, sect_name: str) -> dict[str, str]:
         """ return section in config, empty dictionary if missing """
         if sect_name in self.sections():
             return dict(self[sect_name])
